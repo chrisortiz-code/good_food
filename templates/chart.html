@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Orders Chart</title>
+  <style>
+    table{
+      border-collapse: collapse;
+      width: 85%;
+    }
+    th, td {
+      border: 1px solid #181818;
+    }
+    th {background: #ccc ;}
+  </style>
+</head>
+<body>
+  <h3>ORDERS</h3>
+  <table>
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th>Items</th>
+            <th>Total (P)</th>
+  
+        </tr>
+        
+    </thead>
+    <tbody>
+        {% for date, items, total in orders %}
+        <tr>
+            <td> {{date}}</td>
+            <td> {{items}}</td>
+            <td> {{total}}</td>
+        
+        </tr>
+        {% endfor %}
+    </tbody>
+  </table>
+  <br>
+  <form action = "/">
+    <button type = "submit"> Back to Checkout</button>
+  </form>
+</body>
+</html>

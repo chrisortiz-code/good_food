@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Order</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 10px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+
+    .product {
+      text-align: center;
+      border: 1px solid #ccc;
+      padding: 5px;
+    }
+
+    .product img {
+      width: 100%;
+      height: auto;
+      max-height: 100px;
+      object-fit: contain;
+    }
+
+    .summary {
+      margin-top: 20px;
+      border-top: 1px dashed #999;
+      padding-top: 10px;
+    }
+
+    .line {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 5px;
+    }
+
+    .footer-buttons {
+      margin-top: 60px;
+      text-align: center;
+      opacity: 0.6;
+    }
+  </style>
+</head>
+<body>
+  <h2 style = "text-align: center; margin-bottom: 20px;">Good Food</h2>
+  <form id="orderForm" action="/checkout" method="post" onsubmit="return confirmCheckout();">
+    <div class="grid">
+      {% for name, price, image in products %}
+        <div class="product">
+          {% if image %}
+            <img src="{{ '/' + image }}" alt="{{ name }}">
+          {% else %}
+            <div style="height: 100px; background: #f0f0f0;">No Image</div>
+          {% endif %}
+          <div>{{ name }} ({{ price }})</div>
+          <input type="number" name="{{ name }}" min="0" value="0" onchange="updateSummary()">
+        </div>
+      {% endfor %}
+    </div>
+
+    <div class="summary" id="summary"></div>
+
+    <button type="submit" style="margin-top: 20px;">Checkout</button>
+  </form>
+
+  <div class="footer-buttons">
+    <form action="/chart" style="display:inline-block;">
+      <button type="submit">View Past Orders</button>
+    </form>
+    <form action="/products" style="display:inline-block;">
+      <button type="submit">Manage Products</button>
+    </form>
+  </div>
+
+  <script>
+    const productData = {
+      {% for name, price, image in products %}
+        "{{ name }}": {{ price }},
+      {% endfor %}
+    };
+  
+    document.addEventListener("DOMContentLoaded", () => {
+      const form = document.getElementById("orderForm");
+  
+      // Update summary on load
+      updateSummary();
+  
+      // Trigger summary update on any input change
+      for (const name in productData) {
+        const input = form.elements[name];
+        if (input) {
+          input.addEventListener("change", updateSummary);
+        }
+      }
+  
+      // Intercept form submission
+      form.addEventListener("submit", (e) => {
+        let hasItems = false;
+  
+        for (const name in productData) {
+          const qty = parseInt(form.elements[name].value || 0);
+          if (qty > 0) {
+            hasItems = true;
+            break;
+          }
+        }
+  
+        if (!hasItems) {
+          e.preventDefault();
+          return;
+        }
+  
+        if (!confirm("Confirm checkout?")) {
+          e.preventDefault();
+        }
+      });
+    });
+  
+    function updateSummary() {
+      const form = document.getElementById("orderForm");
+      const summaryDiv = document.getElementById("summary");
+      summaryDiv.innerHTML = "";
+  
+      let total = 0;
+      for (const name in productData) {
+        const input = form.elements[name];
+        const qty = parseInt(input.value || 0);
+        const price = productData[name];
+  
+        if (qty > 0) {
+          const lineTotal = qty * price;
+          total += lineTotal;
+  
+          const div = document.createElement("div");
+          div.className = "line";
+          div.innerHTML = `<span>${name} x${qty}</span><span>$${lineTotal.toFixed(2)}</span>`;
+          summaryDiv.appendChild(div);
+        }
+      }
+  
+      if (total > 0) {
+        const line = document.createElement("div");
+        line.className = "line";
+        line.style.borderTop = "1px dotted #aaa";
+        line.style.paddingTop = "5px";
+        line.innerHTML = `<strong>Total:</strong><strong>$${total.toFixed(2)}</strong>`;
+        summaryDiv.appendChild(line);
+      }
+    }
+
+
+    updateSummary();  // trigger on first load if any default values
+  </script>
+
+</body>
+</html>
