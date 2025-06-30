@@ -7,6 +7,9 @@
     body {
       font-family: sans-serif;
       padding: 10px;
+      background:linear-gradient(to bottom, blue, white, red, white);
+      background-attachment: fixed;
+      min-height: 100vh;
     }
 
     .grid {
@@ -54,7 +57,7 @@
       {% for name, price, image in products %}
         <div class="product">
           {% if image %}
-            <img src="{{ '/' + image }}" alt="{{ name }}">
+              <img src="{{ image }}" alt="{{ name }}">
           {% else %}
             <div style="height: 100px; background: #f0f0f0;">No Image</div>
           {% endif %}

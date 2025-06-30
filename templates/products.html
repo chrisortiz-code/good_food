@@ -3,28 +3,135 @@
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Manage Products</title>
+<style>
+   body {
+      font-family: sans-serif;
+      margin:0;
+      padding: 10px;
+      background: #f7f7f7;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px,1fr));
+      gap: 1rem;
+      padding: 1rem;
+    }
+
+    .product {
+      background: white;
+      padding: 1rem;  
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      display:flex;
+      flex-direction: column;
+      align-items: stretch;
+    }
+  
+    form {
+      display:flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      width:100%;
+    }
+    label{
+      font-size: 0.85rem;
+      color: #555;
+    }
+
+    input {
+      width:100%;
+      padding:0.3rem;
+      font-size:0.9rem;
+    }
+
+    input.product-name,
+    input.product-price{
+      display:block;
+      width:100%;
+      margin: 0.3rem 9;
+      padding: 0.4rem;
+      font-size: 1rem;
+      text-align: center;
+      border:none;
+      background: transparent;
+      
+      font-weight :bold;
+    }
+    input.product-price {
+      color : #333;
+      font-weight:normal
+    }
+    
+    .image-wrapper img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+
+    .image-wrapper {
+      width:100%;
+      height:100px;
+      margin-top: .5rem;
+      overflow:hidden;
+      display:flex;
+      align-items:center;
+      justify-content: ceter;
+      border: 1px solid #ddd;
+      background: #fafafa;
+    }
+    button{
+      padding:.4rem;
+      margin-top:.3rem;
+      width: 100%;
+      background-color: #eee;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover{
+      background-color: #ddd;
+    }
+    .delete-button {
+      background-color: rgb(252, 166, 166);
+    }
+    .delete-button:hover{
+      background-color: rgb(248, 94, 94);
+    }
+</style>
+ 
+
 </head>
 <body>
-  <h3>Existing Products</h3>
+  <h2 style = "text-align: center; margin-bottom: 20px;">Categories</h2>
+  <div class = "grid">
   {% for name, price, image in products %}
-    {% if image %}
 
-    <img src = {{ '/' + image }}" alt = "{[No Picture]}" width = "60"><br>
-
-     {% endif%}
-    <form action="/products/update" method="post" style="margin-bottom:10px;">
-      <input type="hidden" name="name" value="{{ name }}">
-      Name: <input type="text" name="new_name" value="{{ name }}">
-      Price: <input type="number" step="0.01" name="price" value="{{ price }}">
-      Image: <input type = "file" name = "image" accept = "image/*" capture = "environment">
-      <button type="submit">Update</button>
-    </form>
-    <form action="/products/delete" method="post" style="margin-bottom:20px;">
-      <input type="hidden" name="name" value="{{ name }}">
-      <button type="submit">Delete</button>
-    </form>
+      <div class = "product">
+        
+      <form action="/products/update/{{name}}" method="post" enctype = "multipart/form-data" style="margin-bottom:10px;">
+       
+        <input type="hidden" name="name" value="{{ name }}">
+        <label>Name:</label> 
+        <input class = "product-name" type="text" name="new_name" value="{{ name }}"" required>
+        <label>Price (RD$): </label>
+        <input class = "product-price" type="number" step="10" name="price" value="{{ price }}" required>
+        <label>Change Image:</label> 
+        <input type = "file" name = "image" accept = "image/*" capture = "environment">
+        <div class = "image-wrapper">
+          <img src="{{image}}">
+        </div>
+        
+        <button type="submit">Update</button>
+      </form>
+      <form action="/products/delete" method="post" style="margin-bottom:20px;">
+        <input type="hidden" name="name" value="{{ name }}">
+        <button type="submit" class = "delete-button">Delete</button>
+      </form>
+    </div>
   {% endfor %}
 
+ </div>
   <h3>Add New Product</h3>
   <form action="/products/add" method="post">
     Name: <input type="text" name="name" required>

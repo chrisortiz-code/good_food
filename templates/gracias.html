@@ -3,10 +3,24 @@
     <head>
         <title>Gracias</title>
         <meta name = "viewport" content = "width=device-width", initial-scale = 1">
+        <style>
+            body { font-family: sans-serif; padding: 20px; text-align: center;}
+            .receipt {margin: 20px auto; max-width: 300px;  text-align: left; border-top: 2px dotted #999; padding-top:10px;}
+            .line { display: flex; justify-content: space-between; margin-bottom: 5px;}
+        </style>
     </head>
 
     <body>
         <h3>Gracias para todos</h3>
+        {%for name, qty, subtotal in receipt  %}
+        <div class = "line">
+            <span> {{name}} x{{qty}}</span>
+            <span>${{ subtotal}}</span>
+        </div>
+        {% endfor%}
+        <div class = "line" style = "border-top: 5px dotted #aaa; padding-top:5px;">
+            <strong>Total:</strong><strong> ${{ total}}</strong>
+        </div>
         <form action = "/">
             <button type=""submit">New Transaction</button>
         </form>
