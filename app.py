@@ -1,6 +1,6 @@
 from flask import Flask, render_template, render_template_string, request, redirect
 import sqlite3
-import datetime
+from datetime import date, timedelta, datetime
 
 import os
 from werkzeug.utils import secure_filename
@@ -44,7 +44,7 @@ def checkout():
             receipt.append((name,qty,line_total))
             total+=line_total
         
-    timestamp = datetime.datetime.today().strftime("%Y-%m-%d %H:%M")
+    timestamp = datetime.today().strftime("%Y-%m-%d %H:%M")
 
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
@@ -100,6 +100,8 @@ def add_product():
         filename = secure_filename(image.filename)
         image_path = os.path.join(UPLOAD_FOLDER,filename)
         image.save(image_path)
+    else:
+        image_path = ""
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute("INSERT INTO products (name, price, image) VALUES (?, ?, ?)", (name, price, image_path))
@@ -111,11 +113,46 @@ def add_product():
 def chart():
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
-    c.execute("Select date, products, total from orders order by date")
+
+    start = request.args.get("start")
+    end =  request.args.get("end") or date.today()
+
+    offset = request.args.get("offset",0)
+    if not start:
+        start = end - timedelta(days=7)
+    
+
+    start_full = f"{str(start)} 00:00:00"
+    end_full = f"{str(end)} 23:59:59"
+
+    length = c.execute("select count(*) from orders where date between ? and ?",(start_full, end_full)).fetchone()[0]
+
+    c.execute("Select date, products, total from orders where date between ? and ? order by date desc Limit 50 offset ?", (start_full,end_full,offset))
+   
     data = c.fetchall()
-    print(data)
-    conn.close()
-    return render_template("chart.html", orders = data)
+    
+    c.execute("Select name, price from products")
+    prod = c.fetchall()
+
+    summ = {name: {'qty': 0, 'total': 0} for name, _ in prod}
+    full_total = 0
+    for _, items, total in data:
+        for item in items.split(","):
+            name, qty = item.strip().rsplit(' ',1)
+            qty = int(qty[1])
+            summ[name]['qty'] +=qty
+            summ[name]['total']+= total
+            full_total += total
+
+    return render_template("chart.html", 
+                           orders = data, 
+                           full_total = full_total,
+                           start = str(start),
+                           end = str(end), 
+                           summary = summ, 
+                           length=length,
+                           offset=offset)
+
 
 # @app.route("/test")
 # def test():

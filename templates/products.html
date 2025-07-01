@@ -3,12 +3,14 @@
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Manage Products</title>
+  <link rel = stylesheet href = "static/styles.css">
+
 <style>
    body {
       font-family: sans-serif;
       margin:0;
       padding: 10px;
-      background: #f7f7f7;
+
     }
 
     .grid {
@@ -121,7 +123,7 @@
         <div class = "image-wrapper">
           <img src="{{image}}">
         </div>
-        
+
         <button type="submit">Update</button>
       </form>
       <form action="/products/delete" method="post" style="margin-bottom:20px;">
@@ -136,10 +138,12 @@
   <form action="/products/add" method="post">
     Name: <input type="text" name="name" required>
     Price: <input type="number" step="0.01" name="price" required>
+    Image: <input type = "file" name = "image" accept = "image/*" capture = "environment">
+
     <button type="submit">Add</button>
   </form>
 
-  <form ation = "/" style=" "margin-bottom: 20px;">
+  <form action = "/" style="margin-bottom: 20px;">
   <button type = "submit">Back to Checkout</button>
   </form>
 </body>

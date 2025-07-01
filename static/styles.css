@@ -1,0 +1,6 @@
+body{
+    background:linear-gradient(to bottom, rgb(223, 226, 252), #e9e8e8, white, white);
+    background-attachment: fixed;
+    min-height: 100vh;
+
+}
