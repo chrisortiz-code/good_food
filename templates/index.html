@@ -1,9 +1,16 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Good Food Risto</title>
+  <title>Good Food Risto</title> 
   <link rel = stylesheet href = "static/styles.css">
+  <link rel="icon" href="{{ url_for('static', filename='icon.png') }}">
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='icon.png') }}">
+  <meta name="theme-color" content="#ffffff">
+  <meta name = "mobile-web-app-capable" content = "yes">
+
+  <meta name = "apple-mobile-web-app-capable" content = "yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale = 1.0, user-scalable=no">
+
   <style>
     body {
       font-family: sans-serif;
@@ -50,6 +57,21 @@
       text-align: center;
       opacity: 0.6;
     }
+
+    .quantity-controls {
+      display:flex;
+      align-items: center;
+      gap:8px;
+      justify-content: center;
+      height:60px;
+    }
+
+    .quantity-controls button {
+      padding: 4px 8px;
+      font-size: 1.2rem;
+    }
+
+
   </style>
 </head>
 <body>
@@ -64,7 +86,14 @@
             <div style="height: 100px; background: #f0f0f0;">No Image</div>
           {% endif %}
           <div style="font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif; font-size: 18px;" >{{ name }} ({{ price }})</div>
-          <input type="number" name="{{ name }}" min="0" value="0" onchange="updateSummary()">
+          <div class = "quantity-controls">
+            <button type = "button"
+            onclick = "changeQty('{{name}}', -1)">-</button>
+            <span id = "qty-{{name}}">0</span>
+            <button type = "button" onclick = "changeQty('{{name}}',1)">+</button>
+          </div>
+          
+          <input type="hidden" name="product_{{ name }}" id = "input-{{name}}" value="0">
         </div>
       {% endfor %}
     </div>
@@ -86,9 +115,19 @@
   <script>
     const productData = {
       {% for name, price, image in products %}
-        "{{ name }}": {{ price }},
+        "{{ name }}" : {{ price }},
       {% endfor %}
     };
+
+    function changeQty(id, delta) {
+      const input = document.getElementById("input-" + id);
+      const display = document.getElementById("qty-" + id);
+      let current = parseInt(input.value) || 0;
+      current = Math.max(0, current + delta);
+      input.value = current;
+      display.innerText = current;
+      updateSummary();
+    }
   
     document.addEventListener("DOMContentLoaded", () => {
       const form = document.getElementById("orderForm");
@@ -98,7 +137,7 @@
   
       // Trigger summary update on any input change
       for (const name in productData) {
-        const input = form.elements[name];
+        const input = document.getElementById("qty-"+name);
         if (input) {
           input.addEventListener("change", updateSummary);
         }
@@ -109,7 +148,7 @@
         let hasItems = false;
   
         for (const name in productData) {
-          const qty = parseInt(form.elements[name].value || 0);
+          const qty = parseInt(document.getElementById("input-"+name).value || 0);
           if (qty > 0) {
             hasItems = true;
             break;
@@ -134,10 +173,11 @@
   
       let total = 0;
       for (const name in productData) {
-        const input = form.elements[name];
+
+        const input = document.getElementById("input-"+name);
         const qty = parseInt(input.value || 0);
         const price = productData[name];
-  
+        console.log(qty + "" + name        )
         if (qty > 0) {
           const lineTotal = qty * price;
           total += lineTotal;

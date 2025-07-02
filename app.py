@@ -30,7 +30,7 @@ def index():
 @app.route("/checkout", methods=["POST"])
 def checkout():
     products = get_products()
-    quantities = {item: int(request.form.get(item, 0)) for item,_,_ in products}
+    quantities = {item: int(request.form.get("product_" +item, 0)) for item,_,_ in products}
     filtered = {k: v for k, v in quantities.items() if v > 0}
     if not filtered:
         return redirect("/")
