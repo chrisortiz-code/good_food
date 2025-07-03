@@ -113,34 +113,33 @@
 </head>
 <body>
   <h2 style = "text-align: center; margin-bottom: 20px;">Categories</h2>
-  <div class = "grid">
+  <form method = "POST" action = "/update" enctype = "multipart/form-data">
+<div class = "grid">
   {% for name, price, image in products %}
 
       <div class = "product">
-        
-      <form action="/products/update/{{name}}" method="post" enctype = "multipart/form-data" style="margin-bottom:10px;">
        
         <input type="hidden" name="name" value="{{ name }}">
         <label>Name:</label> 
-        <input class = "product-name" type="text" name="new_name" value="{{ name }}"" required>
+        <input class = "product-name" type="text" name="name-{{loop.index}}" value="{{ name }}"" required>
         <label>Price (RD$): </label>
-        <input class = "product-price" type="number" step="10" name="price" value="{{ price }}" required>
+        <input class = "product-price" type="number" step="10" name="price-{{loop.index}}" value="{{ price }}" required>
         <label>Change Image:</label> 
-        <input type = "file" name = "image" accept = "image/*" capture = "environment">
-        <div class = "image-wrapper">
-          <img src="{{image}}">
-        </div>
-
-        <button type="submit">Update</button>
-      </form>
+        <input type = "file" name = "image-{{loop.index}}" accept = "image/*">
+        <div class = "image-wrapper"><img src="{{image}}"></div>
       <form action="/products/delete" method="post" style="margin-bottom:20px;">
         <input type="hidden" name="name" value="{{ name }}">
         <button type="submit" class = "delete-button">Delete</button>
       </form>
+      </div>
+  {%endfor%}
+    <input type = "hidden" name = "count" value = " {{products|length}}">
+    <div class = "update-all">
+      <button type = "submit">Update Products</button>
     </div>
-  {% endfor %}
-
- </div>
+</div>
+  </form>
+<br>
   <h3>Add New Product</h3>
   <form action="/products/add" method="post">
     Name: <input type="text" name="name" required>

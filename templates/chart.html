@@ -16,9 +16,7 @@
     *{
       color:black;
     }
-    body{
-       background: linear-gradient(to bottom, white, white, rgb(250, 242, 232), white)
-    }
+
     table{
       border-collapse: collapse;
       width: 85%;
@@ -28,6 +26,20 @@
     }
     th, button {background: #ccc ; color:#181818
     }
+
+    .delete-btn{
+background-color:#e74c3c;
+color:white;
+border:none;
+border-radius:50%;
+width:24px;height:24px;
+font-size: 16px;
+line-height:0;
+cursor:pointer;
+text-align:center;
+padding:0;
+}
+.delete-btn:hover{background-color: #c0392b;}
   </style>
 </head>
 <body>
@@ -37,14 +49,20 @@
             <th>Date</th>
             <th>Items</th>
             <th>Total (RD$)</th>
+		<th></th>
     </tr></thead>
     <tbody>
-        {% for date, items, total in orders %}
+        {% for id, date, items, total in orders %}
         <tr>
             <td> {{date}}</td>
             <td> {{items}}</td>
             <td> {{total}}</td>
-        
+            <td>
+		<form action = "/del_order" method = "post">
+			<input type = "hidden" name = "o_id" value = "{{id}}">
+			<button type = "submit" class="delete-btn">-</button>
+		</form>
+            </td>
         </tr>
         {% endfor %}
     </tbody>
@@ -97,6 +115,7 @@
     {%endfor%}
     <tr style = "font-weight:bold; border-top:1px solid black;">
       <td>Total (RD$)</td>
+	<td></td>
       <td>{{full_total}}</td>
     </tr>
   </table>

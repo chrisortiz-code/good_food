@@ -62,24 +62,27 @@ def product_manager():
     conn.close()
     return render_template("products.html", products=products)
 from pathlib import Path
-@app.route("/products/update/<name>", methods=["POST"])
-def update_product(name):
-    name = request.form["name"]
-    price = float(request.form["price"])
-    new_name = request.form["new_name"]
-    image = request.files.get("image")
+@app.route("/update", methods=["POST"])
+def update_prods():
+     cnt = int(request.form.get("count",0))
 
-    if image and image.filename: 
+     conn = sqlite3.connect(DB_PATH)
+     c = conn.cursor()
 
-        filename = secure_filename(image.filename)
-        save_path = Path(UPLOAD_FOLDER)/ filename
-        image.save(str(save_path))
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    cursor.execute("UPDATE products SET name = ?, price = ?, image = ? WHERE name = ?", (new_name, price, str(save_path), name))
-    conn.commit()
-    conn.close()
-    return redirect("/products")
+     for i in range(1,cnt+1):
+        name = request.form.get(f'name-{i}')
+        price = request.form.get(f'price-{i}')
+        image = request.form.get(f'img-{i}')
+        if image and image.filename: 
+            filename = secure_filename(image.filename)
+            save_path = Path(UPLOAD_FOLDER)/ filename
+            image.save(str(save_path))
+        else:
+            save_path = ''
+        c.execute("UPDATE products SET name = ?, price = ?, image = ? WHERE id  = ?", (name, price, str(save_path), i))
+     conn.commit()
+     conn.close()
+     return redirect("/products")
 
 @app.route("/products/delete", methods=["POST"])
 def delete_product():
@@ -117,7 +120,7 @@ def chart():
     start = request.args.get("start")
     end =  request.args.get("end") or date.today()
 
-    offset = request.args.get("offset",0)
+    offset = request.args.get("offset",50)
     if not start:
         start = end - timedelta(days=7)
     
@@ -127,7 +130,7 @@ def chart():
 
     length = c.execute("select count(*) from orders where date between ? and ?",(start_full, end_full)).fetchone()[0]
 
-    c.execute("Select date, products, total from orders where date between ? and ? order by date desc Limit 50 offset ?", (start_full,end_full,offset))
+    c.execute("Select id, date, products, total from orders where date between ? and ? Limit  ?", (start_full,end_full,offset))
    
     data = c.fetchall()
     
@@ -136,14 +139,14 @@ def chart():
 
     summ = {name: {'qty': 0, 'total': 0} for name, _ in prod}
     full_total = 0
-    for _, items, total in data:
+    for _, _, items, total in data:
         for item in items.split(","):
             name, qty = item.strip().rsplit(' ',1)
             qty = int(qty[1])
             summ[name]['qty'] +=qty
             summ[name]['total']+= total
             full_total += total
-
+    conn.close()
     return render_template("chart.html", 
                            orders = data, 
                            full_total = full_total,
@@ -153,6 +156,19 @@ def chart():
                            length=length,
                            offset=offset)
 
+@app.route("/del_order", methods = ["POST"])
+def del_order():
+    order_id = request.form.get('o_id')
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+
+    c.execute("select * from orders")
+    row= c.fetchall()
+    c.execute("delete from orders where id = ?", (order_id,))
+
+    conn.commit()
+    conn.close()
+    return redirect("/chart")
 
 # @app.route("/test")
 # def test():
@@ -166,3 +182,4 @@ def chart():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port = 5000)
+
