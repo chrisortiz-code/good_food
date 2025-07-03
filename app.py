@@ -136,7 +136,7 @@ def chart():
     
     c.execute("Select name, price from products")
     prod = c.fetchall()
-
+    pdict = {name:price for name,price in prod}
     summ = {name: {'qty': 0, 'total': 0} for name, _ in prod}
     full_total = 0
     for _, _, items, total in data:
@@ -144,8 +144,8 @@ def chart():
             name, qty = item.strip().rsplit(' ',1)
             qty = int(qty[1])
             summ[name]['qty'] +=qty
-            summ[name]['total']+= total
-            full_total += total
+            summ[name]['total']+=  pdict[name]
+            full_total += pdict[name]
     conn.close()
     return render_template("chart.html", 
                            orders = data, 

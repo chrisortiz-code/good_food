@@ -2,7 +2,7 @@
 <html>
     <head>
         <title>Gracias</title>
-        <<link rel = stylesheet href = "static/styles.css">
+        <link rel = stylesheet href = "static/styles.css">
         <link rel="icon" href="{{ url_for('static', filename='icon.png') }}">
         <link rel="apple-touch-icon" href="{{ url_for('static', filename='icon.png') }}">
         <meta name="theme-color" content="#ffffff">
@@ -23,7 +23,11 @@
     </head>
 
     <body>
-        <h3>Gracias para todos</h3>
+	<div style = "text-align:center">
+<img style = "margin-left:auto;margin-right:auto; margin-bottom:10px; display:inline-block; max-width:200px;height:auto;" src = "{{url_for('static',filename='gf.png')}}">
+
+</div>
+        <h3>Gracias por tu compra</h3>
         {%for name, qty, subtotal in receipt  %}
         <div class = "line">
             <span> {{name}} x{{qty}}</span>

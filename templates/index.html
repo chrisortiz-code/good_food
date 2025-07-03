@@ -77,9 +77,9 @@
 <body>
 <div style = "text-align:center;">
 
-
   <img style = "margin-left:auto;margin-right:auto; display:inline-block;max-width:200px;height:auto; margin-bottom: 20px;"src = "{{url_for('static',filename='gf.png')}}" alt = "Good Food"</h2>
 </div>
+
   <form id="orderForm" action="/checkout" method="post" onsubmit="return confirmCheckout();">
     <div class="grid">
       {% for name, price, image in products %}
