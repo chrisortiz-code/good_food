@@ -57,32 +57,31 @@ def checkout():
 def product_manager():
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-    cursor.execute("SELECT name, price, image FROM products")
+    cursor.execute("SELECT id, name, price, image FROM products")
     products = cursor.fetchall()
     conn.close()
     return render_template("products.html", products=products)
 from pathlib import Path
 @app.route("/update", methods=["POST"])
 def update_prods():
-     cnt = int(request.form.get("count",0))
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    i = request.form.get('id')
+    name = request.form.get(f'name')
+    price = request.form.get(f'price')
+    image = request.files.get(f'image')
+    print(request.form)
 
-     conn = sqlite3.connect(DB_PATH)
-     c = conn.cursor()
-
-     for i in range(1,cnt+1):
-        name = request.form.get(f'name-{i}')
-        price = request.form.get(f'price-{i}')
-        image = request.form.get(f'img-{i}')
-        if image and image.filename: 
-            filename = secure_filename(image.filename)
-            save_path = Path(UPLOAD_FOLDER)/ filename
-            image.save(str(save_path))
-        else:
-            save_path = ''
-        c.execute("UPDATE products SET name = ?, price = ?, image = ? WHERE id  = ?", (name, price, str(save_path), i))
-     conn.commit()
-     conn.close()
-     return redirect("/products")
+    if image and image.filename:
+        filename = secure_filename(image.filename)
+        save_path = Path(UPLOAD_FOLDER)/ filename
+        image.save(str(save_path))
+    else:
+        save_path = ''
+    c.execute("UPDATE products SET name = ?, price = ?, image = ? WHERE id  = ?", (name, price, str(save_path), i))
+    conn.commit()
+    conn.close()
+    return redirect("/products")
 
 @app.route("/products/delete", methods=["POST"])
 def delete_product():
