@@ -53,10 +53,28 @@
     }
 
     .footer-buttons {
-      margin-top: 60px;
-      text-align: center;
-      opacity: 0.6;
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin-top: 30px;
+      flex-wrap: wrap;
     }
+
+   
+    .footer-buttons button {
+      padding: 10px 16px;
+      font-size: 16px;
+      border-radius: 6px;
+      border: none;
+      background-color: #be4272;
+      color: white;
+      margin: 5px;
+    }
+
+    .footer-buttons button:hover {
+      opacity: 0.8;
+    }
+
 
     .quantity-controls {
       display:flex;
@@ -71,6 +89,27 @@
       font-size: 1.2rem;
     }
 
+    .checkout-button {
+    margin-top: 20px;
+    padding: 12px 24px;
+    font-size: 18px;
+    background-color:#5a866b;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+    }
+
+    .checkout-button:hover {
+      background-color: #318a52; /* Slightly darker green */
+    }
+    
+
+    button:active {
+    transform: scale(0.97);
+    }
 
   </style>
 </head>
@@ -104,17 +143,25 @@
 
     <div class="summary" id="summary"></div>
 
-    <button type="submit" style="margin-top: 20px;">Checkout</button>
+<button type="submit" class="checkout-button">Checkout</button>
   </form>
 
+  <!-- Admin login only shows these after successful session -->
   <div class="footer-buttons">
+    {% if session.get("is_admin") %}
     <form action="/chart" style="display:inline-block;">
       <button type="submit">View Past Orders</button>
     </form>
     <form action="/products" style="display:inline-block;">
       <button type="submit">Manage Products</button>
     </form>
+    {% else %}
+    <form action="/admin" style="display:inline-block;">
+      <button type="submit">Admin Login</button>
+    </form>
+    {% endif %}
   </div>
+
 
 <script>
   const productData = {

@@ -91,17 +91,23 @@
       border: 1px solid #ddd;
       background: #fafafa;
     }
-    button{
-      padding:.4rem;
-      margin-top:.3rem;
-      width: 100%;
-      background-color: #eee;
+    button {
+      padding: 10px 18px;
+      font-size: 16px;
       border: none;
-      border-radius: 4px;
+      border-radius: 8px;
+      color: white;
       cursor: pointer;
+      transition: background-color 0.2s ease, transform 0.1s ease;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
     }
-    button:hover{
-      background-color: #ddd;
+
+    .update-button {
+      background-color: #5a866b; /* Green tint */
+    }
+
+    .update-button:hover {
+      background-color: #318a52; /* Slightly darker green */
     }
     .delete-button {
       background-color: rgb(252, 166, 166);
@@ -131,7 +137,7 @@
         <label>Change Image:</label>  <input type = "file" name = "image" accept = "image/*">
         <div class = "image-wrapper"><img src="{{image}}"></div>
 	
-	<button type = "submit">Update</button>
+	<button class = "update-button" type = "submit">Update</button>
   </form>
       <form action="/products/delete" method="post" style="margin-bottom:20px;">
         <input type="hidden" name="name" value="{{ name }}">
@@ -151,7 +157,7 @@
   </form>
 
   <form action = "/" style="margin-bottom: 20px;">
-  <button type = "submit">Back to Checkout</button>
+  <button  type = "submit">Back to Checkout</button>
   </form>
 </body>
 </html>
