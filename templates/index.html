@@ -116,96 +116,105 @@
     </form>
   </div>
 
-  <script>
-    const productData = {
-      {% for name, price, image in products %}
-        "{{ name }}" : {{ price }},
-      {% endfor %}
-    };
+<script>
+  const productData = {
+    {% for name, price, image in products %}
+      "{{ name }}" : {{ price }},
+    {% endfor %}
+  };
 
-    function changeQty(id, delta) {
-      const input = document.getElementById("input-" + id);
-      const display = document.getElementById("qty-" + id);
-      let current = parseInt(input.value) || 0;
-      current = Math.max(0, current + delta);
-      input.value = current;
-      display.innerText = current;
-      updateSummary();
-    }
-  
-    document.addEventListener("DOMContentLoaded", () => {
-      const form = document.getElementById("orderForm");
-  
-      // Update summary on load
-      updateSummary();
-  
-      // Trigger summary update on any input change
-      for (const name in productData) {
-        const input = document.getElementById("qty-"+name);
-        if (input) {
-          input.addEventListener("change", updateSummary);
-        }
+  function changeQty(id, delta) {
+    const input = document.getElementById("input-" + id);
+    const display = document.getElementById("qty-" + id);
+    let current = parseInt(input.value) || 0;
+    current = Math.max(0, current + delta);
+    input.value = current;
+    display.innerText = current;
+    updateSummary();
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const form = document.getElementById("orderForm");
+
+    // Update summary on load
+    updateSummary();
+
+    // Trigger summary update on any input change
+    for (const name in productData) {
+      const input = document.getElementById("qty-" + name);
+      if (input) {
+        input.addEventListener("change", updateSummary);
       }
-  
-      // Intercept form submission
-      form.addEventListener("submit", (e) => {
-        let hasItems = false;
-  
-        for (const name in productData) {
-          const qty = parseInt(document.getElementById("input-"+name).value || 0);
-          if (qty > 0) {
-            hasItems = true;
-            break;
-          }
-        }
-  
-        if (!hasItems) {
-          e.preventDefault();
-          return;
-        }
-  
-        if (!confirm("Confirm checkout?")) {
-          e.preventDefault();
-        }
-      });
-    });
-  
-    function updateSummary() {
-      const form = document.getElementById("orderForm");
-      const summaryDiv = document.getElementById("summary");
-      summaryDiv.innerHTML = "";
-  
-      let total = 0;
-      for (const name in productData) {
+    }
 
-        const input = document.getElementById("input-"+name);
-        const qty = parseInt(input.value || 0);
-        const price = productData[name];
-        console.log(qty + "" + name        )
+    // Intercept form submission
+    form.addEventListener("submit", (e) => {
+      let hasItems = false;
+
+      for (const name in productData) {
+        const qty = parseInt(document.getElementById("input-" + name).value || 0);
         if (qty > 0) {
-          const lineTotal = qty * price;
-          total += lineTotal;
-  
-          const div = document.createElement("div");
-          div.className = "line";
-          div.innerHTML = `<span>${name} x${qty}</span><span>$${lineTotal.toFixed(2)}</span>`;
-          summaryDiv.appendChild(div);
+          hasItems = true;
+          break;
         }
       }
-  
-      if (total > 0) {
-        const line = document.createElement("div");
-        line.className = "line";
-        line.style.borderTop = "1px dotted #aaa";
-        line.style.paddingTop = "5px";
-        line.innerHTML = `<strong>Total:</strong><strong>$${total.toFixed(2)}</strong>`;
-        summaryDiv.appendChild(line);
+
+      if (!hasItems) {
+        e.preventDefault();
+        return;
+      }
+
+      if (!confirm("Confirm checkout?")) {
+        e.preventDefault();
+        return;
+      }
+
+      // ✅ Clear all inputs after confirmed submit
+      setTimeout(() => {
+        for (const name in productData) {
+          document.getElementById("input-" + name).value = 0;
+          document.getElementById("qty-" + name).innerText = 0;
+        }
+        updateSummary();
+      }, 100); // slight delay so it runs before reload
+    });
+  });
+
+  function updateSummary() {
+    const form = document.getElementById("orderForm");
+    const summaryDiv = document.getElementById("summary");
+    summaryDiv.innerHTML = "";
+
+    let total = 0;
+    for (const name in productData) {
+      const input = document.getElementById("input-" + name);
+      const qty = parseInt(input.value || 0);
+      const price = productData[name];
+      if (qty > 0) {
+        const lineTotal = qty * price;
+        total += lineTotal;
+
+        const div = document.createElement("div");
+        div.className = "line";
+        div.innerHTML = `<span>${name} x${qty}</span><span>$${lineTotal.toFixed(2)}</span>`;
+        summaryDiv.appendChild(div);
       }
     }
 
+    if (total > 0) {
+      const line = document.createElement("div");
+      line.className = "line";
+      line.style.borderTop = "1px dotted #aaa";
+      line.style.paddingTop = "5px";
+      line.innerHTML = `<strong>Total:</strong><strong>$${total.toFixed(2)}</strong>`;
+      summaryDiv.appendChild(line);
+    }
+  }
 
-    updateSummary();  // trigger on first load if any default values
-  </script>
+  updateSummary(); // trigger on first load if any default values
+</script>
+
+
 
 </body>
 </html>

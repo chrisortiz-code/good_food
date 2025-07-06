@@ -91,7 +91,7 @@ padding:0;
     <input type = "hidden" name = "offset" id = "offset" value = "{{offset or 0}}">
 
     <button type = "submit">Filter</button>
-    <button type = "button" onclick = "setYesterday()">Yesterday</button>
+    <button type = "button" onclick = "setToday()">Today's Orders</button>
 
   </form>
   
@@ -149,13 +149,16 @@ padding:0;
         e.preventDefault()
       }
     });
-  function setYesterday(){
-    const today = new Date();
-    const yesterday = new Date(today);
-    yesterday.setDate(today.getDate()-1);
-    const yStr = yesterday.toISOString().split("T")[0];
-    document.querySelector('input[name = "start"]').value = yStr;
-    document.querySelector('input[name="end"]').value = yStr;
+  function setToday(){
+    const now = new Date();
+
+    // For reference: local date too
+    const local = now.getFullYear() + '-' +
+      String(now.getMonth() + 1).padStart(2, '0') + '-' +
+      String(now.getDate()).padStart(2, '0');
+
+    document.querySelector('input[name = "start"]').value = local;
+    document.querySelector('input[name="end"]').value = local;
     form = document.getElementById("date-form"); 
     
     form.submit();
