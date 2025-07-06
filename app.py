@@ -1,4 +1,4 @@
-from flask import Flask, render_template, render_template_string, request, redirect
+from flask import Flask, render_template, session, render_template_string, request, redirect
 import sqlite3
 from datetime import date, timedelta, datetime
 
@@ -70,7 +70,6 @@ def update_prods():
     name = request.form.get(f'name')
     price = request.form.get(f'price')
     image = request.files.get(f'image')
-    print(request.form)
 
     if image and image.filename:
         filename = secure_filename(image.filename)
@@ -110,6 +109,25 @@ def add_product():
     conn.commit()
     conn.close()
     return redirect("/products")
+
+
+
+app.secret_key = "f92e4b9c638a82e82d1e4e9b4753d1a9fabc1cd2e279c6e7f291f083e82c9b91"
+
+@app.route("/admin", methods=["GET", "POST"])
+def admin():
+    if request.method == "POST":
+        if request.form.get("password") == "chrisjamesortiz":
+            session["is_admin"] = True
+            return redirect("/")
+        else:
+            return render_template("admin.html", error="Wrong password")
+    return render_template("admin.html")
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect("/")
+
 
 @app.route("/chart")
 def chart():
