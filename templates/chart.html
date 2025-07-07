@@ -58,6 +58,7 @@ padding:0;
         {% for id, date, items, total in orders %}
         <tr>
             <td> {{date}}</td>
+            <td>
             {% for item in items.split(",") %}
             {% set item = item.strip() %}
             {% if ":" in item and ";" in item %}
@@ -65,11 +66,12 @@ padding:0;
             {% set qty = item.split(";")[1].strip() %}
             {% set name = name_price.split(":")[0].strip() %}
             {% set price = name_price.split(":")[1].strip() %}
-            <td>{{ name }} @ ${{ price }} × {{ qty }}</td>
+            <li>{{ name }} @ ${{ price }} × {{ qty }}</li>
             {% else %}
-            <td>{{ item }}</td> <!-- fallback for weird strings -->
+            <li>{{ item }}</li> <!-- fallback for weird strings -->
             {% endif %}
             {% endfor %}
+          </td>
             <td> {{total}}</td>
             <td>
 		<form action = "/del_order" method = "post">
