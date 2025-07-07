@@ -180,10 +180,10 @@ def chart():
 
             # Expect format: Name:Price;Qty
             try:
-                name_price, qty = item.split(";")
-                name, price = name_price.split(":")
+                name_price, qty = item.split(";",1)
+                name, price = name_price.split(":",1)
                 name = name.strip()
-                price = price.strip()
+                price = int(price.strip())
                 qty = int(qty.strip())
 
                 # Fallback if name missing (shouldn’t happen with new format)

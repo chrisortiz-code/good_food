@@ -59,19 +59,22 @@ padding:0;
         <tr>
             <td> {{date}}</td>
             <td>
-            {% for item in items.split(",") %}
-            {% set item = item.strip() %}
-            {% if ":" in item and ";" in item %}
-            {% set name_price = item.split(";")[0] %}
-            {% set qty = item.split(";")[1].strip() %}
-            {% set name = name_price.split(":")[0].strip() %}
-            {% set price = name_price.split(":")[1].strip() %}
-            <li>{{ name }} @ ${{ price }} × {{ qty }}</li>
-            {% else %}
-            <li>{{ item }}</li> <!-- fallback for weird strings -->
-            {% endif %}
-            {% endfor %}
-          </td>
+              <ul style="list-style: none; padding-left: 0; margin: 0;">
+                {% for item in items.split(",") %}
+                {% set item = item.strip() %}
+                {% if ":" in item and ";" in item %}
+                {% set name_price = item.split(";")[0] %}
+                {% set qty = item.split(";")[1].strip() %}
+                {% set name = name_price.split(":")[0].strip() %}
+                {% set price = name_price.split(":")[1].strip() %}
+                <li>{{ name }} @ ${{ price }} × {{ qty }}</li>
+                {% else %}
+                <li>{{ item }}</li> <!-- fallback for weird strings -->
+                {% endif %}
+                {% endfor %}
+              </ul>
+            </td>
+
             <td> {{total}}</td>
             <td>
 		<form action = "/del_order" method = "post">
