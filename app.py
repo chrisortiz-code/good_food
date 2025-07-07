@@ -138,7 +138,7 @@ def admin():
         else:
             return render_template("admin.html", error="Wrong password")
     return render_template("admin.html")
-@app.route("/logout")
+@app.route("/logout" methods = ["POST"])
 def logout():
     session.clear()
     return redirect("/")
