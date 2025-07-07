@@ -30,28 +30,43 @@ def index():
 @app.route("/checkout", methods=["POST"])
 def checkout():
     products = get_products()
-    quantities = {item: int(request.form.get("product_" +item, 0)) for item,_,_ in products}
+    quantities = {
+        item: int(request.form.get("product_" + item, 0))
+        for item, _, _ in products
+    }
+
     filtered = {k: v for k, v in quantities.items() if v > 0}
+
     if not filtered:
         return redirect("/")
-    summary = ", ".join(f"{k} ({v})" for k, v in filtered.items())
+
+    order_items = []
     total = 0
     receipt = []
-    for name, price,_ in products:
+
+    for name, price, _ in products:
         qty = filtered.get(name)
         if qty:
-            line_total=  qty*price
-            receipt.append((name,qty,line_total))
-            total+=line_total
-        
+            # New format: name:unit_price;qty
+            order_items.append(f"{name}:{price};{qty}")
+
+            line_total = qty * price
+            receipt.append((name, qty, line_total))
+            total += line_total
+
+    products_string = ", ".join(order_items)
     timestamp = datetime.today().strftime("%Y-%m-%d %H:%M")
 
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-    cursor.execute("INSERT INTO orders (date, products, total) VALUES (?, ?, ?)", (timestamp, summary, total))
+    cursor.execute(
+        "INSERT INTO orders (date, products, total) VALUES (?, ?, ?)",
+        (timestamp, products_string, total)
+    )
     conn.commit()
     conn.close()
-    return render_template("/gracias.html", receipt = receipt, total = total)
+
+    return render_template("/gracias.html", receipt=receipt, total=total)
 
 @app.route("/products")
 def product_manager():
@@ -95,7 +110,7 @@ def delete_product():
 @app.route("/products/add", methods=["POST"])
 def add_product():
     name = request.form["name"]
-    price = float(request.form["price"])
+    price = request.form["price"]
     image = request.files.get("image")
     if image and image.filename:
         filename = secure_filename(image.filename)
@@ -154,15 +169,37 @@ def chart():
     c.execute("Select name, price from products")
     prod = c.fetchall()
     pdict = {name:price for name,price in prod}
-    summ = {name: {'qty': 0, 'total': 0} for name, _ in prod}
+    summ = {}
     full_total = 0
-    for _, _, items, total in data:
+
+    for _, _, items, _ in data:
         for item in items.split(","):
-            name, qty = item.strip().rsplit(' ',1)
-            qty = int(qty[1])
-            summ[name]['qty'] +=qty
-            summ[name]['total']+=  pdict[name]
-            full_total += pdict[name]
+            item = item.strip()
+            if not item:
+                continue
+
+            # Expect format: Name:Price;Qty
+            try:
+                name_price, qty = item.split(";")
+                name, price = name_price.split(":")
+                name = name.strip()
+                price = price.strip()
+                qty = int(qty.strip())
+
+                # Fallback if name missing (shouldn’t happen with new format)
+                if not name:
+                    name = "Other"
+
+                if name not in summ:
+                    summ[name] = {'qty': 0, 'total': 0}
+
+                summ[name]['qty'] += qty
+                summ[name]['total'] += price * qty
+                full_total += price * qty
+
+            except Exception as e:
+                print(f"⚠️ Skipped malformed item: {item} ({e})")
+
     conn.close()
     return render_template("chart.html", 
                            orders = data, 
