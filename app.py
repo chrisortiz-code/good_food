@@ -88,10 +88,18 @@ def update_prods():
 
     if image and image.filename:
         filename = secure_filename(image.filename)
-        save_path = Path(UPLOAD_FOLDER)/ filename
+        save_path = Path(UPLOAD_FOLDER) / filename
         image.save(str(save_path))
+        image_path = str(save_path)
     else:
-        save_path = ''
+        # Get the current image path from DB
+        c.execute("SELECT image FROM products WHERE id = ?", (i,))
+        current_image = c.fetchone()
+        if current_image:
+            image_path = current_image[0]
+        else:
+            image_path = ''
+
     c.execute("UPDATE products SET name = ?, price = ?, image = ? WHERE id  = ?", (name, price, str(save_path), i))
     conn.commit()
     conn.close()
@@ -138,7 +146,7 @@ def admin():
         else:
             return render_template("admin.html", error="Wrong password")
     return render_template("admin.html")
-@app.route("/logout" methods = ["POST"])
+@app.route("/logout", methods = ["POST"])
 def logout():
     session.clear()
     return redirect("/")
