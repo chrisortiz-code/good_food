@@ -1,51 +1,6 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Statistica</title>
-  <link rel = stylesheet href = "static/styles.css">
-  <link rel="icon" href="{{ url_for('static', filename='icon.png') }}">
-  <link rel="apple-touch-icon" href="{{ url_for('static', filename='icon.png') }}">
-  <meta name="theme-color" content="#ffffff">
-  <meta name = "mobile-web-app-capable" content = "yes">
-
-  <meta name = "apple-mobile-web-app-capable" content = "yes">
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale = 1.0, user-scalable=no">
-  
-  <style>
-	table {margin:0 auto; max-width:auto}
-    *{
-      color:black;
-    }
-
-    table{
-      border-collapse: collapse;
-      width: 85%;
-    }
-    th, td {
-      border: 1px solid #181818;
-    }
-    th, button {background: #ccc ; color:#181818
-    }
-
-    .delete-btn{
-background-color:#e74c3c;
-color:white;
-border:none;
-border-radius:50%;
-width:24px;height:24px;
-font-size: 16px;
-line-height:0;
-cursor:pointer;
-text-align:center;
-padding:0;
-}
-.delete-btn:hover{background-color: #c0392b;}
-  </style>
-</head>
-<body>
-	<div style = "text-align:center">
-<img style = "margin-left:auto;margin-right:auto;display:inline-block;max-width:200px;height:auto;" src = "{{url_for('static',filename='gf.png')}}">
-
+{% extends "base.html" %}
+{% block title %}Statistica{% endblock %}
+{% block content %}
     <h3 style = "text-align:left">Orders between <b> {{start[5:]}} </b> and <b> {{end[5:]}} </b></h3>
   <table>
     <thead><tr>
@@ -69,12 +24,11 @@ padding:0;
                 {% set price = name_price.split(":")[1].strip() %}
                 <li>{{ name }} @ ${{ price }} × {{ qty }}</li>
                 {% else %}
-                <li>{{ item }}</li> <!-- fallback for weird strings -->
+                <li>{{ item }}</li>
                 {% endif %}
                 {% endfor %}
               </ul>
             </td>
-
             <td> {{total}}</td>
             <td>
 		<form action = "/del_order" method = "post">
@@ -91,9 +45,7 @@ padding:0;
           <input type = "hidden" id = "start" name = "start" value = "{{start}}">
           <input type = "hidden" id = "end" name = "end" value = "{{end}}">
           <input type = "hidden" name = "offset" id = "offset" value = "{{offset + 50}}">
-      
           <button type = "submit"">Load More</button>
-
       </form>
   {%else%}
       <small style = "color:gray;">All orders loaded</small>
@@ -105,16 +57,9 @@ padding:0;
     <label for = "end">End:</label>
     <input type = "date" id = "end" name = "end" value = "{{end}}">
     <input type = "hidden" name = "offset" id = "offset" value = "{{offset or 0}}">
-
     <button type = "submit">Filter</button>
     <button type = "button" onclick = "setToday()">Today's Orders</button>
-
   </form>
-  
-  
-
-
-
   <h3 style = "text-align:left">Per Product Stats</h3>
   <table>
     <tr>
@@ -130,7 +75,6 @@ padding:0;
             <td> {{data.total}} </td>
             </tr>
         {%endif%}
-
     {%endfor%}
     <tr style = "font-weight:bold; border-top:1px solid black;">
       <td>Total (RD$)</td>
@@ -138,28 +82,13 @@ padding:0;
       <td>{{full_total}}</td>
     </tr>
   </table>
-
-
-  <br>
-
-  <form action = "/">
-    <button type = "submit"> Back to Checkout</button>
-  </form>
-
-</div>
-</body>
-
-
-
-
-
-
+{% endblock %}
+{% block scripts %}
 <script>
   document.getElementById("date-form").addEventListener( "submit",
     function (e) {
       const start = document.querySelector("start").value;
       const end = document.querySelector("end").value;
-
       if (start && end && start >end ){
         alert("End must be after start");
         e.preventDefault()
@@ -167,18 +96,13 @@ padding:0;
     });
   function setToday(){
     const now = new Date();
-
-    // For reference: local date too
     const local = now.getFullYear() + '-' +
       String(now.getMonth() + 1).padStart(2, '0') + '-' +
       String(now.getDate()).padStart(2, '0');
-
     document.querySelector('input[name = "start"]').value = local;
     document.querySelector('input[name="end"]').value = local;
     form = document.getElementById("date-form"); 
-    
     form.submit();
-    
   }
 </script>
-</html>
+{% endblock %}

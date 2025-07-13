@@ -1,44 +1,16 @@
-<!DOCTYPE html?
-<html>
-    <head>
-        <title>Gracias</title>
-        <link rel = stylesheet href = "static/styles.css">
-        <link rel="icon" href="{{ url_for('static', filename='icon.png') }}">
-        <link rel="apple-touch-icon" href="{{ url_for('static', filename='icon.png') }}">
-        <meta name="theme-color" content="#ffffff">
-        <meta name = "mobile-web-app-capable" content = "yes">
-      
-        <meta name = "apple-mobile-web-app-capable" content = "yes">
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale = 1.0, user-scalable=no">
-        
-        <style>
-
-            body { font-family: sans-serif; 
-                padding: 20px;
-                 text-align: center;
-                background: linear-gradient()}
-            .receipt {margin: 20px auto; max-width: 300px;  text-align: left; border-top: 2px dotted #999; padding-top:10px;}
-            .line { display: flex; justify-content: space-between; margin-bottom: 5px;}
-        </style>
-    </head>
-
-    <body>
-	<div style = "text-align:center">
-<img style = "margin-left:auto;margin-right:auto; margin-bottom:10px; display:inline-block; max-width:200px;height:auto;" src = "{{url_for('static',filename='gf.png')}}">
-
-</div>
-        <h3>Gracias por tu compra</h3>
+{% extends "base.html" %}
+{% block title %}Gracias{% endblock %}
+{% block content %}
+        <h3 style="text-align:center; margin-bottom: 20px;">Gracias por tu compra</h3>
         {%for name, qty, subtotal in receipt  %}
-        <div class = "line">
-            <span> {{name}} x{{qty}}</span>
-            <span>${{ subtotal}}</span>
+        <div class = "line" style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="flex:1; text-align:left;">{{name}} <span style="color:#888;">x{{qty}}</span></span>
+            <span style="min-width:80px; text-align:right;">${{ subtotal}}</span>
         </div>
         {% endfor%}
-        <div class = "line" style = "border-top: 5px dotted #aaa; padding-top:5px;">
-            <strong>Total:</strong><strong> ${{ total}}</strong>
+        <div class = "line" style = "border-top: 5px dotted #aaa; padding-top:5px; display: flex; justify-content: flex-end; align-items: center;">
+            <span style="flex:1;"></span>
+            <span style="font-weight:bold; min-width:60px; text-align:right;">Total:</span>
+            <span style="font-weight:bold; min-width:80px; text-align:right;">${{ total}}</span>
         </div>
-        <form action = "/">
-            <button type=""submit">New Transaction</button>
-        </form>
-    </body>
-</html>
+{% endblock %}

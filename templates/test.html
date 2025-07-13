@@ -1,5 +1,51 @@
-{% for name, price, image in products %}
-    <img src = "{{image}}">
+<!DOCTYPE html>
+<html lang="en">
 
-{% endfor %}
+<head>
+    <meta charset="UTF-8" />
+    <title>Test SortableJS</title>
+    <style>
+        ul {
+            list-style: none;
+            padding: 0;
+        }
 
+        li {
+            margin: 8px 0;
+            padding: 10px;
+            background: #f0f0f0;
+            border: 1px solid #ccc;
+            cursor: grab;
+        }
+    </style>
+</head>
+
+<body>
+    <h2>Drag to Reorder Products</h2>
+    <ul id="products-list">
+        <li data-id="1">Pizza</li>
+        <li data-id="2">Burger</li>
+        <li data-id="3">Pasta</li>
+        <li data-id="4">Salad</li>
+    </ul>
+
+    <!-- ✅ Local SortableJS -->
+    <script src="{{ url_for('static', filename='js/Sortable.min.js') }}"></script>
+
+    <script>
+        const sortable = new Sortable(document.getElementById('products-list'), {
+            animation: 150,
+            onEnd: function (evt) {
+                // Get new order
+                let order = [];
+                document.querySelectorAll('#products-list li').forEach(li => {
+                    order.push(li.dataset.id);
+                });
+                console.log("New order:", order);
+                // Optional: send to server with fetch()
+            }
+        });
+    </script>
+</body>
+
+</html>

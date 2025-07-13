@@ -1,9 +1,10 @@
 from flask import Flask, render_template, session, render_template_string, request, redirect
 import sqlite3
 from datetime import date, timedelta, datetime
-
+from pathlib import Path
 import os
 from werkzeug.utils import secure_filename
+import re
 
 
 app = Flask(__name__)
@@ -17,10 +18,29 @@ if not os.path.exists(UPLOAD_FOLDER):
 def get_products():
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-    cursor.execute("SELECT name, price, image FROM products")
+    cursor.execute("SELECT name, price, image FROM products ORDER BY position ASC, id ASC")
     products = cursor.fetchall()
     conn.close()
     return products
+
+def smart_capitalize(name):
+    # Remove special characters except spaces and slashes
+    name = re.sub(r'[^\w\s/]', ' ', name)
+    def cap_word(word, is_first):
+        if is_first or len(word) > 3:
+            return word.capitalize()
+        return word.lower()
+    words = re.split(r'(\s+)', name)  # Keep spaces
+    result = []
+    first = True
+    for w in words:
+        if w.strip() == '':
+            result.append(w)
+        else:
+            result.append(cap_word(w, first))
+            if w.strip():
+                first = False
+    return ''.join(result).strip()
 
 @app.route("/")
 def index():
@@ -72,38 +92,12 @@ def checkout():
 def product_manager():
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-    cursor.execute("SELECT id, name, price, image FROM products")
+    cursor.execute("SELECT id, name, price, image FROM products ORDER BY position ASC, id ASC")
     products = cursor.fetchall()
     conn.close()
     return render_template("products.html", products=products)
-from pathlib import Path
-@app.route("/update", methods=["POST"])
-def update_prods():
-    conn = sqlite3.connect(DB_PATH)
-    c = conn.cursor()
-    i = request.form.get('id')
-    name = request.form.get(f'name')
-    price = request.form.get(f'price')
-    image = request.files.get(f'image')
 
-    if image and image.filename:
-        filename = secure_filename(image.filename)
-        save_path = Path(UPLOAD_FOLDER) / filename
-        image.save(str(save_path))
-        image_path = str(save_path)
-    else:
-        # Get the current image path from DB
-        c.execute("SELECT image FROM products WHERE id = ?", (i,))
-        current_image = c.fetchone()
-        if current_image:
-            image_path = current_image[0]
-        else:
-            image_path = ''
 
-    c.execute("UPDATE products SET name = ?, price = ?, image = ? WHERE id  = ?", (name, price, str(save_path), i))
-    conn.commit()
-    conn.close()
-    return redirect("/products")
 
 @app.route("/products/delete", methods=["POST"])
 def delete_product():
@@ -118,7 +112,14 @@ def delete_product():
 @app.route("/products/add", methods=["POST"])
 def add_product():
     name = request.form["name"]
-    price = request.form["price"]
+    name = smart_capitalize(name)
+    import re
+    raw_price = request.form.get('price', '').strip()
+    clean_price = re.sub(r'[^\d]', '', raw_price)
+    try:
+        price = int(clean_price)
+    except ValueError:
+        price = 0
     image = request.files.get("image")
     if image and image.filename:
         filename = secure_filename(image.filename)
@@ -128,11 +129,56 @@ def add_product():
         image_path = ""
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-    cursor.execute("INSERT INTO products (name, price, image) VALUES (?, ?, ?)", (name, price, image_path))
+    # Get the current max position
+    cursor.execute("SELECT MAX(position) FROM products")
+    max_position = cursor.fetchone()[0]
+    if max_position is None:
+        new_position = 1
+    else:
+        new_position = max_position + 1
+    cursor.execute("INSERT INTO products (name, price, image, position) VALUES (?, ?, ?, ?)", (name, price, image_path, new_position))
     conn.commit()
     conn.close()
     return redirect("/products")
 
+@app.route("/products/bulk_update", methods=["POST"])
+def bulk_update_products():
+    from werkzeug.utils import secure_filename
+    import re
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    # Get all product ids from the form
+    ids = request.form.getlist('id')
+    names = request.form.getlist('name')
+    prices = request.form.getlist('price')
+    positions = request.form.getlist('position')
+    # For file uploads, use request.files.getlist for all images
+    images = request.files.getlist('image')
+    for idx, prod_id in enumerate(ids):
+        name = names[idx]
+        name = smart_capitalize(name)
+        raw_price = prices[idx].strip()
+        clean_price = re.sub(r'[^\d]', '', raw_price)
+        try:
+            price = int(clean_price)
+        except ValueError:
+            price = 0
+        position = int(positions[idx]) if positions[idx].isdigit() else idx + 1
+        image = images[idx] if idx < len(images) else None
+        # Handle image upload or keep existing
+        if image and image.filename:
+            filename = secure_filename(image.filename)
+            save_path = os.path.join(UPLOAD_FOLDER, filename)
+            image.save(save_path)
+            image_path = save_path
+        else:
+            c.execute("SELECT image FROM products WHERE id = ?", (prod_id,))
+            current_image = c.fetchone()
+            image_path = current_image[0] if current_image else ''
+        c.execute("UPDATE products SET name = ?, price = ?, image = ?, position = ? WHERE id = ?", (name, price, image_path, position, prod_id))
+    conn.commit()
+    conn.close()
+    return redirect("/products")
 
 
 app.secret_key = "f92e4b9c638a82e82d1e4e9b4753d1a9fabc1cd2e279c6e7f291f083e82c9b91"
@@ -232,14 +278,9 @@ def del_order():
     conn.close()
     return redirect("/chart")
 
-# @app.route("/test")
-# def test():
-#     conn = sqlite3.connect(DB_PATH)
-#     cursor = conn.cursor()
-#     cursor.execute("SELECT name, price, image FROM products")
-#     products = cursor.fetchall()
-#     conn.close()
-#     return render_template("test.html",products = products)
+@app.route("/test")
+def test():
+    return render_template("test.html")
 
 
 if __name__ == '__main__':

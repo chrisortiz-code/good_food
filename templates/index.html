@@ -1,124 +1,6 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Good Food Risto</title> 
-  <link rel = stylesheet href = "static/styles.css">
-  <link rel="icon" href="{{ url_for('static', filename='icon.png') }}">
-  <link rel="apple-touch-icon" href="{{ url_for('static', filename='icon.png') }}">
-  <meta name="theme-color" content="#ffffff">
-  <meta name = "mobile-web-app-capable" content = "yes">
-
-  <meta name = "apple-mobile-web-app-capable" content = "yes">
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale = 1.0, user-scalable=no">
-
-  <style>
-    body {
-      font-family: sans-serif;
-      padding: 10px;
-      background-attachment: fixed;
-      min-height: 100vh;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 10px;
-    }
-
-    .product {
-      text-align: center;
-      border: 5px solid #be4272;
-      border-radius: 10px;
-	word-wrap:break-word;overflow-wrap:break-word;
-      padding: 5px;
-    }
-
-    .product img {
-      width: 100%;
-      height: auto;
-      max-height: 100px;
-      object-fit: contain;
-    }
-
-    .summary {
-      margin-top: 20px;
-      border-top: 1px dashed #999;
-      padding-top: 10px;
-    }
-
-    .line {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 5px;
-    }
-
-    .footer-buttons {
-      display: flex;
-      justify-content: center;
-      gap: 1rem;
-      margin-top: 30px;
-      flex-wrap: wrap;
-    }
-
-   
-    .footer-buttons button {
-      padding: 10px 16px;
-      font-size: 16px;
-      border-radius: 6px;
-      border: none;
-      background-color: #be4272;
-      color: white;
-      margin: 5px;
-    }
-
-    .footer-buttons button:hover {
-      opacity: 0.8;
-    }
-
-
-    .quantity-controls {
-      display:flex;
-      align-items: center;
-      gap:8px;
-      justify-content: center;
-      height:60px;
-    }
-
-    .quantity-controls button {
-      padding: 4px 8px;
-      font-size: 1.2rem;
-    }
-
-    .checkout-button {
-    margin-top: 20px;
-    padding: 12px 24px;
-    font-size: 18px;
-    background-color:#5a866b;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-    cursor: pointer;
-    transition: background-color 0.2s ease, transform 0.1s ease;
-    }
-
-    .checkout-button:hover {
-      background-color: #318a52; /* Slightly darker green */
-    }
-    
-
-    button:active {
-    transform: scale(0.97);
-    }
-
-  </style>
-</head>
-<body>
-<div style = "text-align:center;">
-
-  <img style = "margin-left:auto;margin-right:auto; display:inline-block;max-width:200px;height:auto; margin-bottom: 20px;"src = "{{url_for('static',filename='gf.png')}}" alt = "Good Food"</h2>
-</div>
-
+{% extends "base.html" %}
+{% block title %}Good Food Risto{% endblock %}
+{% block content %}
   <form id="orderForm" action="/checkout" method="post" onsubmit="return confirmCheckout();">
     <div class="grid">
       {% for name, price, image in products %}
@@ -135,44 +17,21 @@
             <span id = "qty-{{name}}">0</span>
             <button type = "button" onclick = "changeQty('{{name}}',1)">+</button>
           </div>
-          
           <input type="hidden" name="product_{{ name }}" id = "input-{{name}}" value="0">
         </div>
       {% endfor %}
     </div>
-
     <div class="summary" id="summary"></div>
-
-<button type="submit" class="checkout-button">Checkout</button>
+    <button type="submit" class="checkout-button">Checkout</button>
   </form>
-
-  <!-- Admin login only shows these after successful session -->
-  <div class="footer-buttons">
-    {% if session.get("is_admin") %}
-    <form action="/chart" style="display:inline-block;">
-      <button type="submit">View Past Orders</button>
-    </form>
-    <form action="/products" style="display:inline-block;">
-      <button type="submit">Manage Products</button>
-    </form>
-    <form action="/logout" method="post" style="display:inline-block;">
-          <button type="submit">Logout</button>
-    </form>
-    {% else %}
-    <form action="/admin" style="display:inline-block;">
-      <button type="submit">Admin Login</button>
-    </form>
-    {% endif %}
-  </div>
-
-
+{% endblock %}
+{% block scripts %}
 <script>
   const productData = {
     {% for name, price, image in products %}
-      "{{ name }}" : {{ price }},
+      "{{ name }}": {{ price }}{% if not loop.last %}, {% endif %}
     {% endfor %}
   };
-
   function changeQty(id, delta) {
     const input = document.getElementById("input-" + id);
     const display = document.getElementById("qty-" + id);
@@ -182,25 +41,17 @@
     display.innerText = current;
     updateSummary();
   }
-
   document.addEventListener("DOMContentLoaded", () => {
     const form = document.getElementById("orderForm");
-
-    // Update summary on load
     updateSummary();
-
-    // Trigger summary update on any input change
     for (const name in productData) {
       const input = document.getElementById("qty-" + name);
       if (input) {
         input.addEventListener("change", updateSummary);
       }
     }
-
-    // Intercept form submission
     form.addEventListener("submit", (e) => {
       let hasItems = false;
-
       for (const name in productData) {
         const qty = parseInt(document.getElementById("input-" + name).value || 0);
         if (qty > 0) {
@@ -208,33 +59,27 @@
           break;
         }
       }
-
       if (!hasItems) {
         e.preventDefault();
         return;
       }
-
       if (!confirm("Confirm checkout?")) {
         e.preventDefault();
         return;
       }
-
-      // ✅ Clear all inputs after confirmed submit
       setTimeout(() => {
         for (const name in productData) {
           document.getElementById("input-" + name).value = 0;
           document.getElementById("qty-" + name).innerText = 0;
         }
         updateSummary();
-      }, 100); // slight delay so it runs before reload
+      }, 100);
     });
   });
-
   function updateSummary() {
     const form = document.getElementById("orderForm");
     const summaryDiv = document.getElementById("summary");
     summaryDiv.innerHTML = "";
-
     let total = 0;
     for (const name in productData) {
       const input = document.getElementById("input-" + name);
@@ -243,28 +88,27 @@
       if (qty > 0) {
         const lineTotal = qty * price;
         total += lineTotal;
-
         const div = document.createElement("div");
         div.className = "line";
-        div.innerHTML = `<span>${name} x${qty}</span><span>$${lineTotal.toFixed(2)}</span>`;
+        div.style.display = "flex";
+        div.style.justifyContent = "space-between";
+        div.style.alignItems = "center";
+        div.innerHTML = `<span style='flex:1; text-align:left;'>${name} <span style='color:#888;'>x${qty}</span></span><span style='min-width:80px; text-align:right;'>$${lineTotal.toFixed(2)}</span>`;
         summaryDiv.appendChild(div);
       }
     }
-
     if (total > 0) {
       const line = document.createElement("div");
       line.className = "line";
+      line.style.display = "flex";
+      line.style.justifyContent = "flex-end";
+      line.style.alignItems = "center";
       line.style.borderTop = "1px dotted #aaa";
       line.style.paddingTop = "5px";
-      line.innerHTML = `<strong>Total:</strong><strong>$${total.toFixed(2)}</strong>`;
+      line.innerHTML = `<span style='flex:1;'></span><span style='font-weight:bold; min-width:60px; text-align:right;'>Total:</span><span style='font-weight:bold; min-width:80px; text-align:right;'>$${total.toFixed(2)}</span>`;
       summaryDiv.appendChild(line);
     }
   }
-
-  updateSummary(); // trigger on first load if any default values
+  updateSummary();
 </script>
-
-
-
-</body>
-</html>
+{% endblock %}
