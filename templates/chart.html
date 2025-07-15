@@ -44,7 +44,7 @@
       <form method = "GET" action = "/chart">
           <input type = "hidden" id = "start" name = "start" value = "{{start}}">
           <input type = "hidden" id = "end" name = "end" value = "{{end}}">
-          <input type = "hidden" name = "offset" id = "offset" value = "{{offset + 50}}">
+          <input type = "hidden" name = "offset" id = "offset" value = "{{ offset|int + 50 }}">
           <button type = "submit"">Load More</button>
       </form>
   {%else%}
