@@ -115,10 +115,12 @@ def add_product():
     name = smart_capitalize(name)
     import re
     raw_price = request.form.get('price', '').strip()
-    clean_price = re.sub(r'[^\d]', '', raw_price)
-    try:
-        price = int(clean_price)
-    except ValueError:
+    if re.match(r'^-?\d+$', raw_price):
+        try:
+            price = int(raw_price)
+        except ValueError:
+            price = 0
+    else:
         price = 0
     image = request.files.get("image")
     if image and image.filename:
@@ -158,10 +160,12 @@ def bulk_update_products():
         name = names[idx]
         name = smart_capitalize(name)
         raw_price = prices[idx].strip()
-        clean_price = re.sub(r'[^\d]', '', raw_price)
-        try:
-            price = int(clean_price)
-        except ValueError:
+        if re.match(r'^-?\d+$', raw_price):
+            try:
+                price = int(raw_price)
+            except ValueError:
+                price = 0
+        else:
             price = 0
         position = int(positions[idx]) if positions[idx].isdigit() else idx + 1
         image = images[idx] if idx < len(images) else None
